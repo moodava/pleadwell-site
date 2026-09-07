@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>PyraPlaint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --pressed:#141820; --bg:#1A1E28; --raised:#22283A;
+  --active:#3848A0; --highlight:#5878D0; --key:#E0B274;
+  --ink:#fff; --grey:#D0CCC0; --dim:#A6A092; --hair:rgba(255,255,255,.12);
+  --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; background:var(--bg)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--display); -webkit-font-smoothing:antialiased; overflow-x:hidden}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--highlight); outline-offset:4px}
+
+#gl{position:fixed; inset:0; width:100%; height:100%; z-index:0; display:block}
+
+/* ------------------------------------------------------------ chrome */
+.top{
+  position:fixed; top:0; left:0; right:0; z-index:5;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 28px;
+  background:rgba(20,24,32,.72); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--hair);
+}
+.mark{font-family:var(--display); font-weight:700; font-size:16px; letter-spacing:-.01em; text-decoration:none; display:flex; align-items:center; gap:10px}
+.mark svg{width:18px; height:18px}
+.mark{color:var(--ink)}
+.top a.cta{font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; text-decoration:none; padding:10px 14px; border:1px solid var(--highlight); color:var(--ink)}
+
+/* progress rail */
+.rail{position:fixed; right:22px; top:50%; transform:translateY(-50%); z-index:5; width:1px; height:220px; background:var(--hair)}
+.rail i{position:absolute; left:-2px; width:5px; height:5px; background:var(--dim); border-radius:0}
+.rail b{position:absolute; left:-1px; width:3px; height:0; background:var(--highlight); top:0; transition:height .12s linear}
+
+/* ------------------------------------------------------------ copy */
+.stage{position:relative; z-index:1}
+section{min-height:100vh; display:grid; align-content:center; padding:96px clamp(24px,6vw,96px) 64px; max-width:1400px; margin:0 auto}
+section.hero{min-height:100vh}
+section.cta{min-height:80vh}
+.eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--key); margin:0 0 22px}
+h1,h2{
+  font-family:var(--display); font-weight:800; margin:0;
+  letter-spacing:-.035em; line-height:.94; text-wrap:balance;
+  font-variation-settings:"opsz" 96;
+}
+h1{font-size:clamp(44px,8.4vw,128px); max-width:11ch}
+h1,h2,.sub,.eyebrow,.n{text-shadow:0 0 18px #1A1E28,0 0 40px #141820,0 0 72px #141820}
+h2{font-size:clamp(40px,7.5vw,112px); max-width:12ch}
+h1 span,h2 span{display:block}
+.sub{font-family:var(--mono); font-size:clamp(13px,1.1vw,15px); line-height:1.7; color:var(--grey); max-width:44ch; margin:28px 0 0}
+.sub b{color:#fff; font-weight:500}
+.n{font-family:var(--mono); font-size:11px; letter-spacing:.2em; color:var(--highlight); margin:0 0 18px}
+
+.btn{
+  display:inline-block; margin-top:34px; font-family:var(--mono); font-size:13px; letter-spacing:.14em; text-transform:uppercase;
+  text-decoration:none; color:#fff; background:var(--active); padding:16px 22px;
+  background-image:linear-gradient(180deg, rgba(255,255,255,.13), rgba(0,0,0,.14));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.20), inset 0 -1px 0 rgba(0,0,0,.36), 0 10px 26px -10px rgba(56,72,160,.55);
+  transition:transform .16s cubic-bezier(.2,0,0,1), box-shadow .16s;
+}
+.btn:hover{transform:translateY(-2px); box-shadow:inset 0 1px 0 rgba(255,255,255,.26), 0 16px 36px -12px rgba(88,120,208,.6)}
+
+footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); display:flex; gap:28px; flex-wrap:wrap; border-top:1px solid var(--hair); max-width:1400px; margin:0 auto}
+
+@media (max-width:640px){
+  .rail{display:none}
+  .top{padding:18px 20px}
+  .top a.cta{padding:8px 10px; font-size:11px}
+}
+</style>
+
+<canvas id="gl" aria-hidden="true"></canvas>
+
+<div class="top">
+  <a class="mark" href="#top" aria-label="PyraPlaint">
+    <svg viewBox="0 0 22 22" aria-hidden="true"><path d="M11 2 20 19H2L11 2Z" fill="none" stroke="#fff" stroke-width="1.7"/><path d="M11 9.5 15.2 17H6.8L11 9.5Z" fill="#fff"/></svg>
+    PyraPlaint
+  </a>
+  <a class="cta" href="#contact">Request a walkthrough</a>
+</div>
+
+<div class="rail" aria-hidden="true">
+  <i style="top:0"></i><i style="top:44px"></i><i style="top:88px"></i><i style="top:132px"></i><i style="top:176px"></i><i style="top:216px"></i>
+  <b id="railfill"></b>
+</div>
+
+<div class="stage">
+  <section class="hero" id="top" data-state="scatter">
+    <p class="eyebrow">Complaint drafting for consumer credit litigation</p>
+    <h1><span>Facts in.</span><span>A complaint out.</span><span>Nothing guessed.</span></h1>
+    <p class="sub">Every clause in the pleading traces to a fact the client gave. <b>Scroll.</b></p>
+  </section>
+
+  <section data-state="assemble">
+    <p class="n">01 · ASSESS</p>
+    <h2><span>Answer what</span><span>you know.</span></h2>
+    <p class="sub">Calls, texts, a tradeline, a billing dispute, a repossession. The verdict updates as you tick, and names the one question that would add the most.</p>
+  </section>
+
+  <section data-state="pages">
+    <p class="n">02 · ASSEMBLE</p>
+    <h2><span>Every clause</span><span>traces to a fact.</span></h2>
+    <p class="sub">A count is pled when its facts exist, and not otherwise. Paragraphs number themselves. A blank that would print is refused, by name, before export.</p>
+  </section>
+
+  <section data-state="fan">
+    <p class="n">03 · FILE</p>
+    <h2><span>Six courts.</span><span>Their own words.</span></h2>
+    <p class="sub">California Superior. Federal district. Michigan circuit. Texas. Florida county. Pennsylvania magisterial. Each caption, venue clause and prayer is its own. Word or PDF on pleading paper.</p>
+  </section>
+
+  <section data-state="vault">
+    <p class="n">04 · KEEP</p>
+    <h2><span>Nothing leaves</span><span>the machine.</span></h2>
+    <p class="sub">Documents are read on the Mac. The database is encrypted; its key lives in your keychain. The window cannot reach the network. No account. No cloud.</p>
+  </section>
+
+  <section class="cta" id="contact" data-state="vault">
+    <p class="n">05 · SEE IT</p>
+    <h2><span>Watch it draft</span><span>one of yours.</span></h2>
+    <p class="sub">Forty minutes, on a real matter. You will see the audit catch what copy-paste drafting misses.</p>
+    <a class="btn" href="mailto:hello@example.com?subject=PyraPlaint%20walkthrough">Request a walkthrough</a>
+  </section>
+</div>
+<footer><span>PyraPlaint</span><span>macOS</span><span>Built inside a consumer-protection practice</span><span>© 2026</span></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  if (!window.THREE) return;
+  const canvas = document.getElementById('gl');
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' }); }
+  catch (e) { canvas.style.display = 'none'; return; }
+  renderer.setClearColor(0x1A1E28, 1);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+  camera.position.set(0, 0, 16);
+
+  // ---------------------------------------------------------- instances
+  const N = 1600;
+  const box = new THREE.BoxBufferGeometry(1, 0.05, 0.05);
+  const geo = new THREE.InstancedBufferGeometry().copy(box);
+  geo.instanceCount = N;
+
+  const scatter = new Float32Array(N * 3);
+  const page    = new Float32Array(N * 3);
+  const vault   = new Float32Array(N * 3);
+  const rot     = new Float32Array(N * 3);
+  const len     = new Float32Array(N);
+  const seed    = new Float32Array(N);
+  const sheet   = new Float32Array(N);
+
+  // Page layout: words laid left to right on ruled lines, eight sheets deep.
+  const SHEETS = 8, LINES = 22, WIDTH = 9.0, LINE_H = 0.5;
+  let s = 0, line = 0, x = -WIDTH / 2;
+  for (let i = 0; i < N; i++) {
+    const L = 0.35 + Math.random() * 1.25;
+    if (x + L > WIDTH / 2) { x = -WIDTH / 2; line++; if (line >= LINES) { line = 0; s++; } }
+    const sh = Math.min(s, SHEETS - 1);
+    page[i*3]   = x + L / 2;
+    page[i*3+1] = (LINES / 2 - line) * LINE_H - LINE_H / 2;
+    page[i*3+2] = -(sh - (SHEETS - 1) / 2) * 0.9;
+    sheet[i] = sh;
+    x += L + 0.22;
+    len[i] = L;
+
+    scatter[i*3]   = (Math.random() - 0.5) * 34;
+    scatter[i*3+1] = (Math.random() - 0.5) * 20;
+    scatter[i*3+2] = (Math.random() - 0.5) * 26 - 4;
+
+    // vault: a dense lattice, 12 x 12 x 12, jittered
+    const k = i % 1728, vx = k % 12, vy = Math.floor(k / 12) % 12, vz = Math.floor(k / 144);
+    vault[i*3]   = (vx - 5.5) * 0.36 + (Math.random() - 0.5) * 0.05;
+    vault[i*3+1] = (vy - 5.5) * 0.36 + (Math.random() - 0.5) * 0.05;
+    vault[i*3+2] = (vz - 5.5) * 0.36 + (Math.random() - 0.5) * 0.05;
+
+    rot[i*3] = Math.random() * 6.283; rot[i*3+1] = Math.random() * 6.283; rot[i*3+2] = Math.random() * 6.283;
+    seed[i] = Math.random();
+  }
+  geo.setAttribute('iScatter', new THREE.InstancedBufferAttribute(scatter, 3));
+  geo.setAttribute('iPage',    new THREE.InstancedBufferAttribute(page, 3));
+  geo.setAttribute('iVault',   new THREE.InstancedBufferAttribute(vault, 3));
+  geo.setAttribute('iRot',     new THREE.InstancedBufferAttribute(rot, 3));
+  geo.setAttribute('iLen',     new THREE.InstancedBufferAttribute(len, 1));
+  geo.setAttribute('iSeed',    new THREE.InstancedBufferAttribute(seed, 1));
+  geo.setAttribute('iSheet',   new THREE.InstancedBufferAttribute(sheet, 1));
+
+  const uniforms = {
+    uTime: { value: 0 }, uAssemble: { value: 0 }, uFan: { value: 0 }, uVault: { value: 0 },
+    uNear: { value: 6 }, uFar: { value: 34 },
+  };
+
+  const mat = new THREE.RawShaderMaterial({
+    uniforms,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: `
+      precision highp float;
+      uniform mat4 modelViewMatrix; uniform mat4 projectionMatrix;
+      uniform float uTime, uAssemble, uFan, uVault;
+      attribute vec3 position;
+      attribute vec3 iScatter, iPage, iVault, iRot;
+      attribute float iLen, iSeed, iSheet;
+      varying float vDepth; varying float vShade;
+
+      mat3 rot3(vec3 r){
+        float cx=cos(r.x),sx=sin(r.x),cy=cos(r.y),sy=sin(r.y),cz=cos(r.z),sz=sin(r.z);
+        mat3 X=mat3(1.,0.,0., 0.,cx,sx, 0.,-sx,cx);
+        mat3 Y=mat3(cy,0.,-sy, 0.,1.,0., sy,0.,cy);
+        mat3 Z=mat3(cz,sz,0., -sz,cz,0., 0.,0.,1.);
+        return Z*Y*X;
+      }
+      void main(){
+        float align = max(uAssemble, uVault);
+        // scattered bars tumble; aligned bars lie flat like set type
+        vec3 r = iRot * (1.0 - align);
+        r.y += (1.0 - align) * uTime * 0.25 * (iSeed - 0.5) * 2.0;
+        r.x += (1.0 - align) * uTime * 0.18 * (fract(iSeed*3.7) - 0.5);
+        // in the vault every bar turns to the same short tick
+        float L = mix(iLen, 0.28, uVault);
+        vec3 p = rot3(r) * (position * vec3(L, 1.0, 1.0));
+
+        // fan: the eight sheets spread apart and turn, one per court
+        vec3 pg = iPage;
+        float off = iSheet - 3.5;
+        pg.z *= 1.0 + uFan * 2.6;
+        pg.x += uFan * off * 0.9;
+        pg = rot3(vec3(0.0, uFan * off * 0.16, 0.0)) * pg;
+
+        vec3 c = mix(iScatter, pg, uAssemble);
+        c = mix(c, iVault, uVault);
+        // idle drift while scattered, a breath while assembled
+        c += (1.0 - align) * 0.12 * vec3(sin(uTime*0.5 + iSeed*21.0), cos(uTime*0.4 + iSeed*17.0), sin(uTime*0.45 + iSeed*13.0));
+        c.y += align * (1.0 - uVault) * 0.03 * sin(uTime*0.8 + iSeed*9.0);
+
+        vec4 mv = modelViewMatrix * vec4(c + p, 1.0);
+        vDepth = -mv.z;
+        vShade = 0.45 + 0.55 * fract(iSeed * 7.31);
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: `
+      precision highp float;
+      uniform float uNear, uFar;
+      varying float vDepth; varying float vShade;
+      void main(){
+        float fog = smoothstep(uFar, uNear, vDepth);
+        float a = (0.35 + 0.65 * vShade) * fog;
+        // Highlight blue in the mass, warming toward the app's key light on the
+        // brightest bars, so the field reads as the software's own material.
+        vec3 hi   = vec3(0.345, 0.471, 0.816);
+        vec3 warm = vec3(0.878, 0.698, 0.455);
+        vec3 tint = mix(hi, warm, smoothstep(0.72, 1.0, vShade));
+        gl_FragColor = vec4(tint * a, a);
+      }`,
+  });
+
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.frustumCulled = false;
+  const group = new THREE.Group();
+  group.add(mesh);
+  scene.add(group);
+
+  // ------------------------------------------------------------ input
+  let mouse = { x: 0, y: 0 }, target = { x: 0, y: 0 };
+  window.addEventListener('pointermove', (e) => {
+    target.x = (e.clientX / window.innerWidth - 0.5) * 2;
+    target.y = (e.clientY / window.innerHeight - 0.5) * 2;
+  }, { passive: true });
+
+  const rail = document.getElementById('railfill');
+  function progress() {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    return max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+  }
+  const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+
+  function resize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    camera.position.z = w < 640 ? 24 : 16;
+  }
+  window.addEventListener('resize', resize); resize();
+
+  let running = true, t0 = performance.now();
+  document.addEventListener('visibilitychange', () => { running = !document.hidden; if (running && !still) frame(); });
+
+  // scroll map: 6 panels. assemble over panel 1..2, fan on panel 3, vault on 4..5
+  let cur = { a: 0, f: 0, v: 0, ry: 0, rx: 0 };
+  function frame() {
+    const t = (performance.now() - t0) / 1000;
+    const p = progress();
+    const A = smooth(0.12, 0.34, p);
+    const F = smooth(0.42, 0.56, p) * (1 - smooth(0.62, 0.72, p));
+    const V = smooth(0.66, 0.84, p);
+    const k = still ? 1 : 0.06;
+    cur.a += (A - cur.a) * k; cur.f += (F - cur.f) * k; cur.v += (V - cur.v) * k;
+    mouse.x += (target.x - mouse.x) * 0.05; mouse.y += (target.y - mouse.y) * 0.05;
+
+    uniforms.uTime.value = still ? 0 : t;
+    uniforms.uAssemble.value = cur.a; uniforms.uFan.value = cur.f; uniforms.uVault.value = cur.v;
+
+    // camera orbit: a slow turn through the whole scroll, parallax from the cursor
+    const ry = -0.35 + p * 1.9 + mouse.x * 0.22;
+    const rx = 0.12 - p * 0.35 + mouse.y * 0.14 + (still ? 0 : Math.sin(t * 0.2) * 0.03);
+    cur.ry += (ry - cur.ry) * 0.08; cur.rx += (rx - cur.rx) * 0.08;
+    group.rotation.set(cur.rx, cur.ry, 0);
+    group.position.x = (window.innerWidth < 900 ? 0 : 3.2) * (1 - cur.v * 0.4);
+    camera.position.z = (window.innerWidth < 640 ? 24 : 16) - cur.v * 4.5 + cur.f * 3.5;
+
+    if (rail) rail.style.height = (p * 220) + 'px';
+    renderer.render(scene, camera);
+    if (!still && running) requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
+</body>
+</html>
