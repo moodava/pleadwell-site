@@ -1,6 +1,6 @@
-# PyraPlaint
+# PleadWell
 
-Landing page for PyraPlaint, complaint drafting for consumer credit litigation.
+Landing page for PleadWell, complaint drafting for consumer credit litigation.
 
 A single self-contained page. Three.js is loaded from a CDN; there is no build
 step and no local assets.
