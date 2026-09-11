@@ -145,14 +145,10 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
   if (!window.THREE) return;
   const canvas = document.getElementById('gl');
   let renderer;
-  // Phones and tablets get fewer bars and fewer pixels, so they hold frame rate;
-  // a scene that drops frames feels slow no matter how quick its easing is.
-  const small = Math.min(window.innerWidth, window.innerHeight) < 700 ||
-                window.matchMedia('(pointer: coarse)').matches;
-  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: !small, alpha: false, powerPreference: 'high-performance' }); }
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' }); }
   catch (e) { canvas.style.display = 'none'; return; }
   renderer.setClearColor(0x1A1E28, 1);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? 1.5 : 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const scene = new THREE.Scene();
@@ -160,7 +156,7 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
   camera.position.set(0, 0, 16);
 
   // ---------------------------------------------------------- instances
-  const N = small ? 900 : 1600;
+  const N = 1600;
   const box = new THREE.BoxBufferGeometry(1, 0.05, 0.05);
   const geo = new THREE.InstancedBufferGeometry().copy(box);
   geo.instanceCount = N;
@@ -174,7 +170,7 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
   const sheet   = new Float32Array(N);
 
   // Page layout: words laid left to right on ruled lines, eight sheets deep.
-  const SHEETS = 8, LINES = small ? 14 : 22, WIDTH = 9.0, LINE_H = 0.5;
+  const SHEETS = 8, LINES = 22, WIDTH = 9.0, LINE_H = 0.5;
   let s = 0, line = 0, x = -WIDTH / 2;
   for (let i = 0; i < N; i++) {
     const L = 0.35 + Math.random() * 1.25;
@@ -211,7 +207,6 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
   const uniforms = {
     uTime: { value: 0 }, uAssemble: { value: 0 }, uFan: { value: 0 }, uVault: { value: 0 },
     uNear: { value: 6 }, uFar: { value: 34 },
-    uMouse: { value: new THREE.Vector2(0, 0) }, uHover: { value: 0 }, uAspect: { value: 1 }, uVel: { value: 0 },
   };
 
   const mat = new THREE.RawShaderMaterial({
@@ -221,11 +216,10 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
       precision highp float;
       uniform mat4 modelViewMatrix; uniform mat4 projectionMatrix;
       uniform float uTime, uAssemble, uFan, uVault;
-      uniform vec2 uMouse; uniform float uHover, uAspect, uVel;
       attribute vec3 position;
       attribute vec3 iScatter, iPage, iVault, iRot;
       attribute float iLen, iSeed, iSheet;
-      varying float vDepth; varying float vShade; varying float vGlow;
+      varying float vDepth; varying float vShade;
 
       mat3 rot3(vec3 r){
         float cx=cos(r.x),sx=sin(r.x),cy=cos(r.y),sy=sin(r.y),cz=cos(r.z),sz=sin(r.z);
@@ -241,8 +235,7 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
         r.y += (1.0 - align) * uTime * 0.25 * (iSeed - 0.5) * 2.0;
         r.x += (1.0 - align) * uTime * 0.18 * (fract(iSeed*3.7) - 0.5);
         // in the vault every bar turns to the same short tick
-        // bars stretch with the speed of the scroll, so a flick is seen at once
-        float L = mix(iLen, 0.28, uVault) * (1.0 + (1.0 - uVault) * min(abs(uVel) * 2.4, 1.1));
+        float L = mix(iLen, 0.28, uVault);
         vec3 p = rot3(r) * (position * vec3(L, 1.0, 1.0));
 
         // fan: the eight sheets spread apart and turn, one per court
@@ -259,17 +252,6 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
         c.y += align * (1.0 - uVault) * 0.03 * sin(uTime*0.8 + iSeed*9.0);
 
         vec4 mv = modelViewMatrix * vec4(c + p, 1.0);
-        // Where the bar lands on screen, against where the cursor or finger is.
-        // Bars near it are pushed outward and lit; the shove is scaled by depth
-        // so it is the same size on screen for near and far bars alike.
-        vec4 clip = projectionMatrix * mv;
-        vec2 d = clip.xy / clip.w - uMouse;
-        d.x *= uAspect;
-        float dist = length(d);
-        float near = uHover * (1.0 - smoothstep(0.0, 0.5, dist));
-        vec2 dir = dist > 0.0001 ? d / dist : vec2(0.0);
-        mv.xy += dir * near * 0.1 * (-mv.z);
-        vGlow = near;
         vDepth = -mv.z;
         vShade = 0.45 + 0.55 * fract(iSeed * 7.31);
         gl_Position = projectionMatrix * mv;
@@ -277,15 +259,15 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
     fragmentShader: `
       precision highp float;
       uniform float uNear, uFar;
-      varying float vDepth; varying float vShade; varying float vGlow;
+      varying float vDepth; varying float vShade;
       void main(){
         float fog = smoothstep(uFar, uNear, vDepth);
-        float a = (0.35 + 0.65 * vShade) * fog * (1.0 + vGlow * 2.3);
+        float a = (0.35 + 0.65 * vShade) * fog;
         // Highlight blue in the mass, warming toward the app's key light on the
         // brightest bars, so the field reads as the software's own material.
         vec3 hi   = vec3(0.345, 0.471, 0.816);
         vec3 warm = vec3(0.878, 0.698, 0.455);
-        vec3 tint = mix(mix(hi, warm, smoothstep(0.72, 1.0, vShade)), warm, vGlow * 0.55);
+        vec3 tint = mix(hi, warm, smoothstep(0.72, 1.0, vShade));
         gl_FragColor = vec4(tint * a, a);
       }`,
   });
@@ -297,25 +279,11 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
   scene.add(group);
 
   // ------------------------------------------------------------ input
-  // The cursor tilts the whole scene a little and lights the field where it
-  // is. On a phone the same glow rides the finger, and touch events keep
-  // arriving while the page scrolls, so it follows the finger all the way down.
-  const mouse = { x: 0, y: 0 }, target = { x: 0, y: 0 };
-  const point = { x: 0, y: 0 }, pointTarget = { x: 0, y: 0 };
-  let hover = 0, hoverTarget = 0;
-  function aim(clientX, clientY) {
-    target.x = (clientX / window.innerWidth - 0.5) * 2;
-    target.y = (clientY / window.innerHeight - 0.5) * 2;
-    pointTarget.x = target.x;
-    pointTarget.y = -target.y;
-    hoverTarget = 1;
-  }
-  window.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') aim(e.clientX, e.clientY); }, { passive: true });
-  document.documentElement.addEventListener('mouseleave', () => { hoverTarget = 0; });
-  window.addEventListener('touchstart', (e) => { const t = e.touches[0]; if (t) aim(t.clientX, t.clientY); }, { passive: true });
-  window.addEventListener('touchmove', (e) => { const t = e.touches[0]; if (t) aim(t.clientX, t.clientY); }, { passive: true });
-  window.addEventListener('touchend', () => { hoverTarget = 0; }, { passive: true });
-  window.addEventListener('touchcancel', () => { hoverTarget = 0; }, { passive: true });
+  let mouse = { x: 0, y: 0 }, target = { x: 0, y: 0 };
+  window.addEventListener('pointermove', (e) => {
+    target.x = (e.clientX / window.innerWidth - 0.5) * 2;
+    target.y = (e.clientY / window.innerHeight - 0.5) * 2;
+  }, { passive: true });
 
   const rail = document.getElementById('railfill');
   function progress() {
@@ -328,65 +296,40 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
     const w = window.innerWidth, h = window.innerHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h; camera.updateProjectionMatrix();
-    uniforms.uAspect.value = w / h;
     camera.position.z = w < 640 ? 24 : 16;
   }
   window.addEventListener('resize', resize); resize();
 
-  // Easing is exponential in real time rather than per frame, so it feels the
-  // same at 30, 60 or 120 frames a second, and quick enough to feel held.
-  const damp = (a, b, rate, dt) => a + (b - a) * (1 - Math.exp(-rate * dt));
-  let running = !document.hidden, t0 = performance.now(), last = t0, raf = 0;
-  let lastP = progress(), vel = 0;
-  const cur = { a: 0, f: 0, v: 0, ry: 0, rx: 0 };
+  let running = true, t0 = performance.now();
+  document.addEventListener('visibilitychange', () => { running = !document.hidden; if (running && !still) frame(); });
 
-  function frame(now) {
-    now = now || performance.now();
-    const dt = Math.min(0.05, Math.max(0.001, (now - last) / 1000));
-    last = now;
-    const t = (now - t0) / 1000;
+  // scroll map: 6 panels. assemble over panel 1..2, fan on panel 3, vault on 4..5
+  let cur = { a: 0, f: 0, v: 0, ry: 0, rx: 0 };
+  function frame() {
+    const t = (performance.now() - t0) / 1000;
     const p = progress();
-
-    // how fast the reader is scrolling, in page lengths per second
-    const pv = (p - lastP) / dt; lastP = p;
-    vel = damp(vel, Math.max(-1.5, Math.min(1.5, pv)), 10, dt);
-
     const A = smooth(0.12, 0.34, p);
     const F = smooth(0.42, 0.56, p) * (1 - smooth(0.62, 0.72, p));
     const V = smooth(0.66, 0.84, p);
-    if (still) { cur.a = A; cur.f = F; cur.v = V; }
-    else { cur.a = damp(cur.a, A, 7, dt); cur.f = damp(cur.f, F, 7, dt); cur.v = damp(cur.v, V, 7, dt); }
-    mouse.x = damp(mouse.x, target.x, 12, dt); mouse.y = damp(mouse.y, target.y, 12, dt);
-    point.x = damp(point.x, pointTarget.x, 22, dt); point.y = damp(point.y, pointTarget.y, 22, dt);
-    hover = damp(hover, hoverTarget, 10, dt);
+    const k = still ? 1 : 0.06;
+    cur.a += (A - cur.a) * k; cur.f += (F - cur.f) * k; cur.v += (V - cur.v) * k;
+    mouse.x += (target.x - mouse.x) * 0.05; mouse.y += (target.y - mouse.y) * 0.05;
 
     uniforms.uTime.value = still ? 0 : t;
     uniforms.uAssemble.value = cur.a; uniforms.uFan.value = cur.f; uniforms.uVault.value = cur.v;
-    uniforms.uMouse.value.set(point.x, point.y);
-    uniforms.uHover.value = still ? 0 : hover;
-    uniforms.uVel.value = still ? 0 : vel;
 
-    // the orbit through the scroll, the cursor's tilt, and a kick that follows
-    // the scroll's speed so a flick turns the scene
-    const kick = still ? 0 : vel * 0.55;
-    const ry = -0.35 + p * 1.9 + mouse.x * 0.3 + kick;
-    const rx = 0.12 - p * 0.35 + mouse.y * 0.18 + (still ? 0 : Math.sin(t * 0.2) * 0.03);
-    if (still) { cur.ry = ry; cur.rx = rx; }
-    else { cur.ry = damp(cur.ry, ry, 9, dt); cur.rx = damp(cur.rx, rx, 9, dt); }
+    // camera orbit: a slow turn through the whole scroll, parallax from the cursor
+    const ry = -0.35 + p * 1.9 + mouse.x * 0.22;
+    const rx = 0.12 - p * 0.35 + mouse.y * 0.14 + (still ? 0 : Math.sin(t * 0.2) * 0.03);
+    cur.ry += (ry - cur.ry) * 0.08; cur.rx += (rx - cur.rx) * 0.08;
     group.rotation.set(cur.rx, cur.ry, 0);
     group.position.x = (window.innerWidth < 900 ? 0 : 3.2) * (1 - cur.v * 0.4);
     camera.position.z = (window.innerWidth < 640 ? 24 : 16) - cur.v * 4.5 + cur.f * 3.5;
 
     if (rail) rail.style.height = (p * 220) + 'px';
     renderer.render(scene, camera);
-    raf = (!still && running) ? requestAnimationFrame(frame) : 0;
+    if (!still && running) requestAnimationFrame(frame);
   }
-  document.addEventListener('visibilitychange', () => {
-    running = !document.hidden;
-    if (running && !still && !raf) { last = performance.now(); raf = requestAnimationFrame(frame); }
-  });
-  // with reduced motion there is no loop, so each scroll draws one settled frame
-  if (still) window.addEventListener('scroll', () => frame(), { passive: true });
   frame();
 })();
 </script>
