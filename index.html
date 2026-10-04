@@ -6,7 +6,7 @@
 </head>
 <body>
 <title>PleadWell</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ccircle%20cx='50.0'%20cy='47.0'%20r='42.0'%20fill='none'%20stroke='%230f1720'%20stroke-width='6.0'/%3E%3Ccircle%20cx='50.0'%20cy='50.64'%20r='31.08'%20fill='none'%20stroke='%230f1720'%20stroke-width='4.44'/%3E%3Ccircle%20cx='50.0'%20cy='53.33'%20r='23.0'%20fill='none'%20stroke='%230f1720'%20stroke-width='3.29'/%3E%3Ccircle%20cx='50.0'%20cy='55.33'%20r='17.02'%20fill='none'%20stroke='%230f1720'%20stroke-width='2.43'/%3E%3Ccircle%20cx='50.0'%20cy='56.8'%20r='12.59'%20fill='none'%20stroke='%230f1720'%20stroke-width='1.8'/%3E%3Ccircle%20cx='50.0'%20cy='57.89'%20r='9.32'%20fill='none'%20stroke='%230f1720'%20stroke-width='1.33'/%3E%3Ccircle%20cx='50.0'%20cy='58.7'%20r='6.9'%20fill='none'%20stroke='%230f1720'%20stroke-width='0.99'/%3E%3Ccircle%20cx='50.0'%20cy='59.3'%20r='5.1'%20fill='none'%20stroke='%230f1720'%20stroke-width='0.73'/%3E%3Ccircle%20cx='50.0'%20cy='59.74'%20r='3.78'%20fill='none'%20stroke='%230f1720'%20stroke-width='0.54'/%3E%3Ccircle%20cx='50.0'%20cy='60.07'%20r='2.79'%20fill='none'%20stroke='%230f1720'%20stroke-width='0.5'/%3E%3Ccircle%20cx='50.0'%20cy='60.31'%20r='2.07'%20fill='none'%20stroke='%230f1720'%20stroke-width='0.5'/%3E%3Ccircle%20cx='50.0'%20cy='60.6'%20r='1.2'%20fill='%230f1720'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ccircle%20cx='50.0'%20cy='47.0'%20r='42.0'%20fill='none'%20stroke='%230f1720' stroke-width='6'/%3E%3Ccircle%20cx='50.0'%20cy='50.64'%20r='31.08'%20fill='none'%20stroke='%230f1720' stroke-width='6'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -39,7 +39,6 @@ a{color:inherit}
 .mark{font-family:var(--display); font-weight:700; font-size:16px; letter-spacing:-.01em; text-decoration:none; display:flex; align-items:center; gap:10px}
 .mark svg{width:22px; height:22px}
 .mark{color:var(--ink)}
-.top a.cta{font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; text-decoration:none; padding:10px 14px; border:1px solid var(--highlight); color:var(--ink)}
 
 /* progress rail */
 .rail{position:fixed; right:22px; top:50%; transform:translateY(-50%); z-index:5; width:1px; height:220px; background:var(--hair)}
@@ -74,13 +73,11 @@ h1 span,h2 span{display:block}
 }
 .btn:hover{transform:translateY(-2px); box-shadow:inset 0 1px 0 rgba(255,255,255,.26), 0 16px 36px -12px rgba(88,120,208,.6)}
 
-footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); display:flex; gap:28px; flex-wrap:wrap; border-top:1px solid var(--hair); max-width:1400px; margin:0 auto}
+footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap}
 
 @media (max-width:640px){
   .rail{display:none}
   .top{padding:18px 20px}
-  .top a.cta{padding:8px 10px; font-size:11px}
-  .top a.cta .long{display:none}
 }
 </style>
 
@@ -88,10 +85,9 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
 
 <div class="top">
   <a class="mark" href="#top" aria-label="PleadWell">
-    <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50.0" cy="47.0" r="42.0" fill="none" stroke="#fff" stroke-width="6.0"/><circle cx="50.0" cy="50.64" r="31.08" fill="none" stroke="#fff" stroke-width="4.44"/><circle cx="50.0" cy="53.33" r="23.0" fill="none" stroke="#fff" stroke-width="3.29"/><circle cx="50.0" cy="55.33" r="17.02" fill="none" stroke="#fff" stroke-width="2.43"/><circle cx="50.0" cy="56.8" r="12.59" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="50.0" cy="57.89" r="9.32" fill="none" stroke="#fff" stroke-width="1.33"/><circle cx="50.0" cy="58.7" r="6.9" fill="none" stroke="#fff" stroke-width="0.99"/><circle cx="50.0" cy="59.3" r="5.1" fill="none" stroke="#fff" stroke-width="0.73"/><circle cx="50.0" cy="59.74" r="3.78" fill="none" stroke="#fff" stroke-width="0.54"/><circle cx="50.0" cy="60.07" r="2.79" fill="none" stroke="#fff" stroke-width="0.5"/><circle cx="50.0" cy="60.31" r="2.07" fill="none" stroke="#fff" stroke-width="0.5"/><circle cx="50.0" cy="60.6" r="1.2" fill="#fff"/></svg>
+    <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50.0" cy="47.0" r="42.0" fill="none" stroke="#fff" stroke-width="6.0"/><circle cx="50.0" cy="50.64" r="31.08" fill="none" stroke="#fff" stroke-width="6.0"/></svg>
     PleadWell
   </a>
-  <a class="cta" href="#contact"><span class="long">Request a </span>walkthrough</a>
 </div>
 
 <div class="rail" aria-hidden="true">
@@ -121,7 +117,7 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
   <section data-state="fan">
     <p class="n">03 · FILE</p>
     <h2><span>Six courts.</span><span>Their own words.</span></h2>
-    <p class="sub">California Superior. Federal district. Michigan circuit. Texas. Florida county. Pennsylvania magisterial. Each caption, venue clause and prayer is its own. Word or PDF on pleading paper.</p>
+    <p class="sub">California Superior. Federal district. Michigan circuit. Texas. Florida county. Pennsylvania magisterial. Each caption, venue clause and prayer is its own. Word or PDF on plead.</p>
   </section>
 
   <section data-state="vault">
@@ -134,7 +130,6 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
     <p class="n">05 · SEE IT</p>
     <h2><span>Watch it draft</span><span>one of yours.</span></h2>
     <p class="sub">Forty minutes, on a real matter. You will see the audit catch what copy-paste drafting misses.</p>
-    <a class="btn" href="mailto:hello@example.com?subject=PleadWell%20walkthrough">Request a walkthrough</a>
   </section>
 </div>
 <footer><span>PleadWell</span><span>macOS</span><span>Built inside a consumer-protection practice</span><span>© 2026</span></footer>
@@ -230,15 +225,12 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
       }
       void main(){
         float align = max(uAssemble, uVault);
-        // scattered bars tumble; aligned bars lie flat like set type
         vec3 r = iRot * (1.0 - align);
         r.y += (1.0 - align) * uTime * 0.25 * (iSeed - 0.5) * 2.0;
         r.x += (1.0 - align) * uTime * 0.18 * (fract(iSeed*3.7) - 0.5);
-        // in the vault every bar turns to the same short tick
         float L = mix(iLen, 0.28, uVault);
         vec3 p = rot3(r) * (position * vec3(L, 1.0, 1.0));
 
-        // fan: the eight sheets spread apart and turn, one per court
         vec3 pg = iPage;
         float off = iSheet - 3.5;
         pg.z *= 1.0 + uFan * 2.6;
@@ -247,7 +239,6 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
 
         vec3 c = mix(iScatter, pg, uAssemble);
         c = mix(c, iVault, uVault);
-        // idle drift while scattered, a breath while assembled
         c += (1.0 - align) * 0.12 * vec3(sin(uTime*0.5 + iSeed*21.0), cos(uTime*0.4 + iSeed*17.0), sin(uTime*0.45 + iSeed*13.0));
         c.y += align * (1.0 - uVault) * 0.03 * sin(uTime*0.8 + iSeed*9.0);
 
@@ -263,8 +254,6 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
       void main(){
         float fog = smoothstep(uFar, uNear, vDepth);
         float a = (0.35 + 0.65 * vShade) * fog;
-        // Highlight blue in the mass, warming toward the app's key light on the
-        // brightest bars, so the field reads as the software's own material.
         vec3 hi   = vec3(0.345, 0.471, 0.816);
         vec3 warm = vec3(0.878, 0.698, 0.455);
         vec3 tint = mix(hi, warm, smoothstep(0.72, 1.0, vShade));
@@ -278,7 +267,6 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
   group.add(mesh);
   scene.add(group);
 
-  // ------------------------------------------------------------ input
   let mouse = { x: 0, y: 0 }, target = { x: 0, y: 0 };
   window.addEventListener('pointermove', (e) => {
     target.x = (e.clientX / window.innerWidth - 0.5) * 2;
@@ -303,7 +291,6 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
   let running = true, t0 = performance.now();
   document.addEventListener('visibilitychange', () => { running = !document.hidden; if (running && !still) frame(); });
 
-  // scroll map: 6 panels. assemble over panel 1..2, fan on panel 3, vault on 4..5
   let cur = { a: 0, f: 0, v: 0, ry: 0, rx: 0 };
   function frame() {
     const t = (performance.now() - t0) / 1000;
@@ -318,7 +305,6 @@ footer{position:relative; z-index:1; padding:40px clamp(24px,6vw,96px) 48px; fon
     uniforms.uTime.value = still ? 0 : t;
     uniforms.uAssemble.value = cur.a; uniforms.uFan.value = cur.f; uniforms.uVault.value = cur.v;
 
-    // camera orbit: a slow turn through the whole scroll, parallax from the cursor
     const ry = -0.35 + p * 1.9 + mouse.x * 0.22;
     const rx = 0.12 - p * 0.35 + mouse.y * 0.14 + (still ? 0 : Math.sin(t * 0.2) * 0.03);
     cur.ry += (ry - cur.ry) * 0.08; cur.rx += (rx - cur.rx) * 0.08;
